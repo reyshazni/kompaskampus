@@ -33,7 +33,7 @@ Untuk type mengikuti semantic berikut.
 
 ## Workflow
 - Kerjakan semua dari subfolder masing-masing
-ex: front end membuat semuanya di subfolder apps/front-end, back end di apps/back-end
+- ex: front end membuat semuanya di subfolder apps/front-end, back end di apps/back-end
 
 ## Pull Request
 
