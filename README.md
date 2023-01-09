@@ -31,6 +31,10 @@ Untuk type mengikuti semantic berikut.
 - `test`: (adding missing tests, refactoring tests; no production code change)
 - `chore`: (updating grunt tasks etc; no production code change)
 
+## Workflow
+- Kerjakan semua dari subfolder masing-masing
+ex: front end membuat semuanya di subfolder apps/front-end, back end di apps/back-end
+
 ## Pull Request
 
 Untuk melakukan pull request perlu mengikuti flow berikut.
