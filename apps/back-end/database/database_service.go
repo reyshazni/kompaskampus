@@ -5,7 +5,8 @@ import (
 	"FindMyDosen/model/entity"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"log"
 	"sync"
 )
@@ -14,7 +15,11 @@ var database *gorm.DB
 var once sync.Once
 
 func loadDB() {
-	db, err := gorm.Open("mysql", getDatabaseDsn())
+	db, err := gorm.Open(mysql.New(
+		mysql.Config{
+			DSN: getDatabaseDsn(),
+		}))
+	//gorm.Open("mysql", getDatabaseDsn())
 	if err != nil {
 		log.Fatal("Error loading Database", err)
 	}
