@@ -32,6 +32,6 @@ func GetDB() *gorm.DB {
 
 func getDatabaseDsn() string {
 	entity := config.GetDatabaseConf()
-	dsn := fmt.Sprintf("%s:%s@tcp(localhost:3307)/%s?charset=utf8&parseTime=True&loc=Local", entity.User, entity.Password, entity.DbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", entity.User, entity.Password, entity.Url, entity.Port, entity.DbName)
 	return dsn
 }

@@ -13,6 +13,7 @@ func GetDatabaseConf() entity.DatabaseEntity {
 		DbName:   os.Getenv("DATABASE_DBNAME"),
 		Url:      os.Getenv("DATABASE_URL"),
 		Dialect:  os.Getenv("DATABASE_DIALECT"),
+		Port:     os.Getenv("DATABASE_PORT"),
 	}
 }
 

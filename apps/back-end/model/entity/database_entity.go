@@ -6,4 +6,5 @@ type DatabaseEntity struct {
 	DbName   string
 	Url      string
 	Dialect  string
+	Port     string
 }
