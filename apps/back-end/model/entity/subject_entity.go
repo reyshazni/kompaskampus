@@ -2,7 +2,7 @@ package entity
 
 import "gorm.io/gorm"
 
-type SubjectEntity struct {
+type Subject struct {
 	gorm.Model
 	Name         string     `gorm:"type:varchar(100); NOT NULL"`
 	UniversityID int        `gorm:"foreignkey:ID"`
