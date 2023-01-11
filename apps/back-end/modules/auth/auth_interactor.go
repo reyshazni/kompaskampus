@@ -30,7 +30,7 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 
 func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 	db := database.GetDB()
-	hashed, err := hashPassword(user.Password)
+	hashed, err := HashPassword(user.Password)
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
@@ -42,7 +42,7 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		Avatar:       user.Avatar,
 		UniversityID: user.UniversityID,
 		Npm:          user.Npm,
-		BirthDate:    user.BirthDate,
+		BirthDate:    user.BirthDate.Time,
 	}
 	if err = db.Create(&newUser).Error; err != nil {
 		return err, dto.AuthDTO{}
@@ -58,7 +58,7 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 	}
 }
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }

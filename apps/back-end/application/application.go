@@ -5,6 +5,7 @@ import (
 	"FindMyDosen/model/entity"
 	"FindMyDosen/modules/auth"
 	"FindMyDosen/modules/university"
+	"FindMyDosen/modules/user"
 	"github.com/golang-jwt/jwt/v4"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -30,6 +31,7 @@ func ApplicationDelegate() {
 	v1 := e.Group("/v1")
 	auth.AuthController(v1)
 	university.UniController(v1, jwtMiddleware)
+	user.UserController(v1, jwtMiddleware)
 
 	port := config.GetServerPort()
 	e.Logger.Fatal(e.Start(port))
