@@ -4,10 +4,11 @@ import (
 	"FindMyDosen/config"
 	"FindMyDosen/model/entity"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"log"
 	"sync"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 )
 
 var database *gorm.DB
