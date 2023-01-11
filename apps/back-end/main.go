@@ -1,31 +1,20 @@
 package main
 
 import (
-	"net/http"
+	"FindMyDosen/application"
+	"log"
 
-	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
-type user struct {
-	Id       int    `json:"id"`
-	Username string `json:"username"`
-}
-
-var users = []user{
-	{Id: 13, Username: "Yer"},
-	{Id: 15, Username: "Andicka"},
-	{Id: 58, Username: "Yandick"},
-}
-
-func getUsers(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, users)
+func Main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	application.ApplicationDelegate()
 }
 
 func main() {
-	router := gin.Default()
-
-	// new `GET /users` route associated with our `getUsers` function
-	router.GET("/users", getUsers)
-
-	router.Run("localhost:8080")
+	Main()
 }
