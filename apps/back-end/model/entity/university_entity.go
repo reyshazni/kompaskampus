@@ -1,9 +1,7 @@
 package entity
 
-import "github.com/jinzhu/gorm"
-
 type University struct {
-	gorm.Model
+	ID       int    `gorm:"primary_key"`
 	FullName string `gorm:"type:varchar(100); NOT NULL"`
 	UniCode  string `gorm:"type:varchar(10); NOT NULL"`
 }

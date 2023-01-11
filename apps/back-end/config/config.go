@@ -21,3 +21,7 @@ func GetServerPort() string {
 	port := os.Getenv("SERVER_PORT")
 	return fmt.Sprintf(":%s", port)
 }
+
+func GetJWTSecret() string {
+	return os.Getenv("JWT_SECRET")
+}

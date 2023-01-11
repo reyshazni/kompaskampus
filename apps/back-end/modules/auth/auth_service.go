@@ -9,13 +9,44 @@ import (
 )
 
 func handleLogin(c echo.Context) error {
+	user := new(dto.LoginUserDTO)
+	if err := c.Bind(user); err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			dto.BaseDTO{
+				Status:  http.StatusInternalServerError,
+				Message: "Cannot decode Request Body",
+				Data:    err.Error(),
+			},
+		)
+	}
+	validate := validator.New()
+	if err := validate.Struct(user); err != nil {
+		fmt.Println(err)
+		return c.JSON(
+			http.StatusBadRequest,
+			dto.BaseDTO{
+				Status:  http.StatusBadRequest,
+				Message: "Missing Field",
+				Data:    err.Error(),
+			},
+		)
+	}
+	result, err := performUserLogin(user)
+	if err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			dto.BaseDTO{
+				Status:  http.StatusInternalServerError,
+				Message: "Fail to sign in user",
+				Data:    err.Error(),
+			},
+		)
+	}
 	return c.JSON(http.StatusOK, dto.BaseDTO{
-		Message: "ok",
+		Message: "User successfully login",
 		Status:  http.StatusOK,
-		Data: dto.AuthDTO{
-			Token:      "smsms",
-			RefreshKey: "sjskss",
-		},
+		Data:    result,
 	})
 }
 
@@ -27,7 +58,7 @@ func handleRegister(c echo.Context) error {
 			dto.BaseDTO{
 				Status:  http.StatusInternalServerError,
 				Message: "Cannot decode Request Body",
-				Data:    nil,
+				Data:    err.Error(),
 			},
 		)
 	}
