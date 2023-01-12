@@ -36,6 +36,7 @@ func loadDB() {
 	db.AutoMigrate(&entity.Subject{})
 	db.AutoMigrate(&entity.LectureSubject{})
 	db.AutoMigrate(&entity.LectureRating{})
+	db.AutoMigrate(&entity.RefreshToken{})
 	database = db
 }
 

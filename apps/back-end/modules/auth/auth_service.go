@@ -14,6 +14,53 @@ import (
 	"time"
 )
 
+type RefreshDTO struct {
+	UserID       uint   `json:"user_id" validate:"required"`
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+func handleRefresh(c echo.Context) error {
+	refreshDTO := new(RefreshDTO)
+	if err := c.Bind(refreshDTO); err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			dto.BaseDTO{
+				Status:  http.StatusInternalServerError,
+				Message: "Cannot decode Request Body",
+				Data:    err.Error(),
+			},
+		)
+	}
+	validate := validator.New()
+	if err := validate.Struct(refreshDTO); err != nil {
+		fmt.Println(err)
+		return c.JSON(
+			http.StatusBadRequest,
+			dto.BaseDTO{
+				Status:  http.StatusBadRequest,
+				Message: "Missing Field",
+				Data:    err.Error(),
+			},
+		)
+	}
+	result, err := performRefreshToken(refreshDTO.UserID, refreshDTO.RefreshToken)
+	if err != nil {
+		return c.JSON(
+			http.StatusInternalServerError,
+			dto.BaseDTO{
+				Status:  http.StatusInternalServerError,
+				Message: "Fail to generate Token",
+				Data:    err.Error(),
+			},
+		)
+	}
+	return c.JSON(http.StatusOK, dto.BaseDTO{
+		Message: "Generate new Token",
+		Status:  http.StatusOK,
+		Data:    result,
+	})
+}
+
 func handleLogin(c echo.Context) error {
 	user := new(dto.LoginUserDTO)
 	if err := c.Bind(user); err != nil {
@@ -156,9 +203,10 @@ func checkPassword(password string, hashed string) error {
 	return err
 }
 
-func generateToken(uid uint) (string, error) {
+func generateToken(uid uint, isVerified bool) (string, error) {
 	claims := entity.JwtClaims{
 		uid,
+		isVerified,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
 		},

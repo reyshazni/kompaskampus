@@ -4,7 +4,39 @@ import (
 	"FindMyDosen/database"
 	"FindMyDosen/model/dto"
 	"FindMyDosen/model/entity"
+	"math/rand"
+	"time"
 )
+
+func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
+	db := database.GetDB()
+	var refreshRef entity.RefreshToken
+	if err := db.Preload("User").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
+		return dto.AuthDTO{}, err
+	}
+	// check token
+	err := checkPassword(refreshToken, refreshRef.RefreshKey)
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+
+	token, err := generateToken(uid, refreshRef.User.IsVerified)
+	refresh, stored, err := generateRefreshKey()
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", uid).Updates(
+		entity.RefreshToken{
+			RefreshKey: stored,
+		}).Error
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	return dto.AuthDTO{
+		Token:      token,
+		RefreshKey: refresh,
+	}, err
+}
 
 func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 	db := database.GetDB()
@@ -17,10 +49,21 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
-	token, err := generateToken(user.ID)
+	token, err := generateToken(user.ID, user.IsVerified)
+	refresh, stored, err := generateRefreshKey()
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", user.ID).Updates(
+		entity.RefreshToken{
+			RefreshKey: stored,
+		}).Error
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
 	return dto.AuthDTO{
 		Token:      token,
-		RefreshKey: "",
+		RefreshKey: refresh,
 	}, err
 }
 
@@ -44,12 +87,36 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		return err, dto.AuthDTO{}
 	}
 
-	t, err := generateToken(newUser.ID)
+	t, err := generateToken(newUser.ID, newUser.IsVerified)
+	if err != nil {
+		return err, dto.AuthDTO{}
+	}
+	refresh, stored, err := generateRefreshKey()
+	storedRefresh := entity.RefreshToken{
+		UserID:     newUser.ID,
+		RefreshKey: stored,
+	}
+	if err = db.Create(&storedRefresh).Error; err != nil {
+		return err, dto.AuthDTO{}
+	}
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
 	return nil, dto.AuthDTO{
 		Token:      t,
-		RefreshKey: "Ini refresh",
+		RefreshKey: refresh,
 	}
+}
+
+func generateRefreshKey() (string, string, error) {
+	rand.Seed(time.Now().UnixNano()) // seed the random number generator
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()"
+	length := rand.Intn(15-8) + 8 // pick a random length between 8 and 15
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	randomKey := string(b)
+	hashed, err := HashPassword(randomKey)
+	return randomKey, hashed, err
 }
