@@ -1,13 +1,9 @@
 package auth
 
 import (
-	"FindMyDosen/config"
 	"FindMyDosen/database"
 	"FindMyDosen/model/dto"
 	"FindMyDosen/model/entity"
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
@@ -56,25 +52,4 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		Token:      t,
 		RefreshKey: "Ini refresh",
 	}
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPassword(password string, hashed string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
-	return err
-}
-
-func generateToken(uid uint) (string, error) {
-	claims := entity.JwtClaims{
-		uid,
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.GetJWTSecret()))
 }
