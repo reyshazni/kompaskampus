@@ -53,12 +53,16 @@ func getDatabaseDsn() string {
 func Paginate(page int, limit int) *gorm.DB {
 	once.Do(loadDB)
 	pageLimit := limit
+	currPage := page
+	if currPage <= 0 {
+		currPage = 1
+	}
 	switch {
 	case pageLimit > 100:
 		pageLimit = 100
 	case pageLimit <= 0:
 		pageLimit = 1
 	}
-	offset := (page - 1) * pageLimit
+	offset := (currPage - 1) * pageLimit
 	return database.Offset(offset).Limit(pageLimit)
 }
