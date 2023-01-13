@@ -2,7 +2,9 @@ package lecture
 
 import (
 	"FindMyDosen/model/dto"
+	"FindMyDosen/model/entity"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -85,6 +87,16 @@ func handleGetLectureByID(c echo.Context) error {
 }
 
 func handleAddLecture(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*entity.JwtClaims)
+	if !claims.IsVerified {
+		return c.JSON(
+			http.StatusUnauthorized,
+			dto.BaseDTO{
+				Status:  http.StatusUnauthorized,
+				Message: "User is unverified!",
+			})
+	}
 	lectureDTO := new(AddLectureDTO)
 	if err := c.Bind(&lectureDTO); err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.BaseDTO{
@@ -92,7 +104,6 @@ func handleAddLecture(c echo.Context) error {
 			Status:  http.StatusInternalServerError,
 		})
 	}
-
 	validate := validator.New()
 	if err := validate.Struct(lectureDTO); err != nil {
 		return c.JSON(
