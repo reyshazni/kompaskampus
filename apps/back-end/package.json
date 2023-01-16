@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "install": "go mod tidy",
     "dev": "go run .",
     "build": "go build ."
   }
