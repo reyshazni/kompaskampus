@@ -41,8 +41,10 @@ func loadDB() {
 }
 
 func GetDB() *gorm.DB {
-	once.Do(loadDB)
-	return database
+	//once.Do(loadDB)
+	//return database
+	once.Do(loadDBv2)
+	return databasev2
 }
 
 func getDatabaseDsn() string {
@@ -52,7 +54,6 @@ func getDatabaseDsn() string {
 }
 
 func Paginate(page int, limit int) *gorm.DB {
-	once.Do(loadDB)
 	pageLimit := limit
 	currPage := page
 	if currPage <= 0 {
@@ -65,5 +66,5 @@ func Paginate(page int, limit int) *gorm.DB {
 		pageLimit = 1
 	}
 	offset := (currPage - 1) * pageLimit
-	return database.Offset(offset).Limit(pageLimit)
+	return GetDB().Offset(offset).Limit(pageLimit)
 }

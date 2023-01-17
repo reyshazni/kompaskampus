@@ -214,3 +214,8 @@ func generateToken(uid uint, isVerified bool) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.GetJWTSecret()))
 }
+
+func handleVerifyUser(c echo.Context) error {
+	_ = c.Param("code")
+	return c.String(http.StatusOK, "s")
+}
