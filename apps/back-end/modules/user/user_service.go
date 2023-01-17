@@ -3,6 +3,7 @@ package user
 import (
 	"FindMyDosen/model/dto"
 	"FindMyDosen/model/entity"
+	"FindMyDosen/modules/auth"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -59,6 +60,17 @@ func handleChangePassword(c echo.Context) error {
 			},
 		)
 	}
+	
+	if msg, state := auth.IsValidPassword(pwdDTO.NewPassword); !state {
+		return c.JSON(
+			http.StatusBadRequest,
+			dto.BaseDTO{
+				Status:  http.StatusBadRequest,
+				Message: msg,
+			},
+		)
+	}
+
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*entity.JwtClaims)
 	if err := changeUserPassword(claims.Uid, pwdDTO); err != nil {

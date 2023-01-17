@@ -11,4 +11,7 @@ type LectureRating struct {
 	IsAnon           bool           `gorm:"type:BOOLEAN;default:false"`
 	Message          string         `gorm:"type:TEXT"`
 	Recommended      bool           `gorm:"type:BOOLEAN;default:true"`
+	Quality          int            `gorm:"DEFAULT 0"`
+	Difficulty       int            `gorm:"DEFAULT 0"`
+	Overall          float32        `gorm:"DEFAULT 0"`
 }

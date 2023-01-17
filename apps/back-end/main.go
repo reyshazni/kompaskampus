@@ -2,15 +2,13 @@ package main
 
 import (
 	"FindMyDosen/application"
-	"log"
-
 	"github.com/joho/godotenv"
+	"github.com/labstack/gommon/log"
 )
 
 func Main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
 	}
 	application.ApplicationDelegate()
 }

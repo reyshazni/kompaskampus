@@ -23,25 +23,7 @@ func handleGetUniversityData(c echo.Context) error {
 		query.Limit = 10
 	}
 
-	if query.Name != nil {
-		result, err := getUniversityByName(query)
-		if err != nil || len(result) == 0 || result == nil {
-			print("error!")
-			return c.JSON(
-				http.StatusNotFound, dto.BaseDTO{
-					Status:  http.StatusNotFound,
-					Message: "University Not Found!",
-				})
-		}
-		return c.JSON(
-			http.StatusOK, dto.BaseDTO{
-				Status:  http.StatusOK,
-				Message: "Ok",
-				Data:    result,
-			})
-	}
-
-	result, err := getUniversity(query.Page, query.Limit)
+	result, err := getUniversity(query)
 	if err != nil || len(result) == 0 || result == nil {
 		print("error!")
 		return c.JSON(

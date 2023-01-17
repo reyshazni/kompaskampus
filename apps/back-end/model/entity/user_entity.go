@@ -9,6 +9,7 @@ type User struct {
 	gorm.Model
 	Email        string     `gorm:"type:varchar(100);unique;NOT NULL"`
 	Username     string     `gorm:"type:varchar(100);unique; NOT NULL"`
+	AccessLevel  uint       `gorm:"type:int; DEFAULT:0"`
 	FullName     string     `gorm:"type:varchar(100); NOT NULL"`
 	Password     string     `gorm:"type:varchar(100); NOT NULL"`
 	Avatar       string     `gorm:"type:varchar(100);DEFAULT:''"`

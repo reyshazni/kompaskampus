@@ -11,8 +11,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 var database *gorm.DB
@@ -38,12 +36,15 @@ func loadDB() {
 	db.AutoMigrate(&entity.Subject{})
 	db.AutoMigrate(&entity.LectureSubject{})
 	db.AutoMigrate(&entity.LectureRating{})
+	db.AutoMigrate(&entity.RefreshToken{})
 	database = db
 }
 
 func GetDB() *gorm.DB {
-	once.Do(loadDB)
-	return database
+	//once.Do(loadDB)
+	//return database
+	once.Do(loadDBv2)
+	return databasev2
 }
 
 func getDatabaseDsn() string {
@@ -53,14 +54,17 @@ func getDatabaseDsn() string {
 }
 
 func Paginate(page int, limit int) *gorm.DB {
-	once.Do(loadDB)
 	pageLimit := limit
+	currPage := page
+	if currPage <= 0 {
+		currPage = 1
+	}
 	switch {
 	case pageLimit > 100:
 		pageLimit = 100
 	case pageLimit <= 0:
 		pageLimit = 1
 	}
-	offset := (page - 1) * pageLimit
-	return database.Offset(offset).Limit(pageLimit)
+	offset := (currPage - 1) * pageLimit
+	return GetDB().Offset(offset).Limit(pageLimit)
 }

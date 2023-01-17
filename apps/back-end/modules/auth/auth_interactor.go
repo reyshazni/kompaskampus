@@ -1,14 +1,42 @@
 package auth
 
 import (
-	"FindMyDosen/config"
 	"FindMyDosen/database"
 	"FindMyDosen/model/dto"
 	"FindMyDosen/model/entity"
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 	"time"
 )
+
+func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
+	db := database.GetDB()
+	var refreshRef entity.RefreshToken
+	if err := db.Preload("User").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
+		return dto.AuthDTO{}, err
+	}
+	// check token
+	err := checkPassword(refreshToken, refreshRef.RefreshKey)
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+
+	token, err := generateToken(uid, refreshRef.User.IsVerified)
+	refresh, stored, err := generateRefreshKey()
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", uid).Updates(
+		entity.RefreshToken{
+			RefreshKey: stored,
+		}).Error
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	return dto.AuthDTO{
+		Token:      token,
+		RefreshKey: refresh,
+	}, err
+}
 
 func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 	db := database.GetDB()
@@ -21,10 +49,21 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
-	token, err := generateToken(user.ID)
+	token, err := generateToken(user.ID, user.IsVerified)
+	refresh, stored, err := generateRefreshKey()
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
+	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", user.ID).Updates(
+		entity.RefreshToken{
+			RefreshKey: stored,
+		}).Error
+	if err != nil {
+		return dto.AuthDTO{}, err
+	}
 	return dto.AuthDTO{
 		Token:      token,
-		RefreshKey: "",
+		RefreshKey: refresh,
 	}, err
 }
 
@@ -48,33 +87,36 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		return err, dto.AuthDTO{}
 	}
 
-	t, err := generateToken(newUser.ID)
+	t, err := generateToken(newUser.ID, newUser.IsVerified)
+	if err != nil {
+		return err, dto.AuthDTO{}
+	}
+	refresh, stored, err := generateRefreshKey()
+	storedRefresh := entity.RefreshToken{
+		UserID:     newUser.ID,
+		RefreshKey: stored,
+	}
+	if err = db.Create(&storedRefresh).Error; err != nil {
+		return err, dto.AuthDTO{}
+	}
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
 	return nil, dto.AuthDTO{
 		Token:      t,
-		RefreshKey: "Ini refresh",
+		RefreshKey: refresh,
 	}
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func checkPassword(password string, hashed string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
-	return err
-}
-
-func generateToken(uid uint) (string, error) {
-	claims := entity.JwtClaims{
-		uid,
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
-		},
+func generateRefreshKey() (string, string, error) {
+	rand.Seed(time.Now().UnixNano()) // seed the random number generator
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()"
+	length := rand.Intn(15-8) + 8 // pick a random length between 8 and 15
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.GetJWTSecret()))
+	randomKey := string(b)
+	hashed, err := HashPassword(randomKey)
+	return randomKey, hashed, err
 }
