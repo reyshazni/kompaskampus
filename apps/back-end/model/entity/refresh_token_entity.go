@@ -6,8 +6,8 @@ import (
 )
 
 type RefreshToken struct {
-	UserID     uint `gorm:"primarykey"`
-	User       User
+	UserID uint `gorm:"primarykey"`
+	// User       User
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	DeletedAt  gorm.DeletedAt `gorm:"index"`

@@ -23,20 +23,20 @@ type UserInfoDTO struct {
 func getUserInformation(userID uint) (UserInfoDTO, error) {
 	db := database.GetDB()
 	var user entity.User
-	err := db.Preload("University").First(&user, "id = ?", userID).Error
+	err := db.Joins("LEFT JOIN universities on users.university_id = universities.id").First(&user, "id = ?", userID).Error //db.Preload("University").First(&user, "id = ?", userID).Error
 	if err != nil {
 		return UserInfoDTO{}, err
 	}
 	return UserInfoDTO{
-		Id:         user.ID,
-		Email:      user.Email,
-		Username:   user.Username,
-		FullName:   user.FullName,
-		Avatar:     user.Avatar,
-		BirthDate:  user.BirthDate,
-		University: user.University.FullName,
-		Npm:        user.Npm,
-		UniCode:    user.University.UniCode,
+		Id:        user.ID,
+		Email:     user.Email,
+		Username:  user.Username,
+		FullName:  user.FullName,
+		Avatar:    user.Avatar,
+		BirthDate: user.BirthDate,
+		// University: user.University.FullName,
+		Npm: user.Npm,
+		// UniCode:    user.University.UniCode,
 		IsVerified: user.IsVerified,
 	}, nil
 }

@@ -11,7 +11,8 @@ import (
 func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
 	db := database.GetDB()
 	var refreshRef entity.RefreshToken
-	if err := db.Preload("User").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
+	//if err := db.Preload("User").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
+	if err := db.Joins("lEFT JOIN users on refresh_tokens.user_id = users.id").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
 		return dto.AuthDTO{}, err
 	}
 	// check token
@@ -20,7 +21,7 @@ func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
 		return dto.AuthDTO{}, err
 	}
 
-	token, err := generateToken(uid, refreshRef.User.IsVerified)
+	token, err := generateToken(uid, true) //refreshRef.User.IsVerified)
 	refresh, stored, err := generateRefreshKey()
 	if err != nil {
 		return dto.AuthDTO{}, err

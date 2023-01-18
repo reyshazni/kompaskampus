@@ -6,6 +6,20 @@ import (
 	"os"
 )
 
+type RedisEntity struct {
+	Address  string
+	Port     string
+	Password string
+}
+
+func GetRedisConf() RedisEntity {
+	return RedisEntity{
+		Address:  os.Getenv("REDIS_ADR"),
+		Port:     os.Getenv("REDIS_PORT"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
+}
+
 func GetDatabaseConf() entity.DatabaseEntity {
 	return entity.DatabaseEntity{
 		User:     os.Getenv("DATABASE_UNAME"),
