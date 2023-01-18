@@ -13,6 +13,13 @@ type RefreshTokenEntity struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+func GetRefreshToken(uid uint) (string, error) {
+	c := context.Background()
+	redis := database.GetRedisClient()
+	cache := redis.Get(c, string(uid))
+	return cache.Result()
+}
+
 func NewRefreshToken(uid uint) (string, error) {
 	refresh, stored, err := generateRefreshKey()
 	if err != nil {
@@ -26,7 +33,6 @@ func NewRefreshToken(uid uint) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	DeleteRefreshToken(entity.UID)
 	return refresh, nil
 }
 

@@ -6,32 +6,20 @@ import (
 	"FindMyDosen/model/entity"
 	"FindMyDosen/repository/auth_repo"
 	"FindMyDosen/repository/redis_repo"
-	"math/rand"
-	"time"
 )
 
 func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
-	db := database.GetDB()
-	var refreshRef entity.RefreshToken
-	//if err := db.Preload("User").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
-	if err := db.Joins("lEFT JOIN users on refresh_tokens.user_id = users.id").First(&refreshRef, "user_id = ?", uid).Error; err != nil {
+	key, err := redis_repo.GetRefreshToken(uid)
+	if err != nil {
 		return dto.AuthDTO{}, err
 	}
-	// check token
-	err := checkPassword(refreshToken, refreshRef.RefreshKey)
+	err = checkPassword(refreshToken, key)
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
 
 	token, err := generateToken(uid, true) //refreshRef.User.IsVerified)
-	refresh, stored, err := generateRefreshKey()
-	if err != nil {
-		return dto.AuthDTO{}, err
-	}
-	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", uid).Updates(
-		entity.RefreshToken{
-			RefreshKey: stored,
-		}).Error
+	refresh, err := redis_repo.NewRefreshToken(uid)
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
@@ -46,21 +34,15 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 	var user entity.User
 	err := db.Where("email = ?", userData.Email).First(&user).Error
 	if err != nil {
-		return dto.AuthDTO{}, err
+		println("USer ", user.Username)
+		//return dto.AuthDTO{}, err
 	}
 	err = checkPassword(userData.Password, user.Password)
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
 	token, err := generateToken(user.ID, user.IsVerified)
-	refresh, stored, err := generateRefreshKey()
-	if err != nil {
-		return dto.AuthDTO{}, err
-	}
-	err = db.Model(entity.RefreshToken{}).Where("user_id = ?", user.ID).Updates(
-		entity.RefreshToken{
-			RefreshKey: stored,
-		}).Error
+	refresh, err := redis_repo.NewRefreshToken(user.ID)
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
@@ -111,17 +93,4 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		Token:      t,
 		RefreshKey: refresh,
 	}
-}
-
-func generateRefreshKey() (string, string, error) {
-	rand.Seed(time.Now().UnixNano()) // seed the random number generator
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()"
-	length := rand.Intn(15-8) + 8 // pick a random length between 8 and 15
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
-	}
-	randomKey := string(b)
-	hashed, err := auth_repo.HashPassword(randomKey)
-	return randomKey, hashed, err
 }

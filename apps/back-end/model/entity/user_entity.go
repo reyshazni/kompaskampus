@@ -1,12 +1,10 @@
 package entity
 
-import (
-	"gorm.io/gorm"
-	"time"
-)
+import "time"
 
 type User struct {
-	gorm.Model
+	//gorm.Model
+	ID           uint      `gorm:"primarykey"`
 	Email        string    `gorm:"type:varchar(100);unique;NOT NULL"`
 	Username     string    `gorm:"type:varchar(100);unique; NOT NULL"`
 	AccessLevel  uint      `gorm:"type:int; DEFAULT:0"`

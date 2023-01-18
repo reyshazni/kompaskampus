@@ -11,11 +11,10 @@ import (
 
 func ApplicationDelegate() {
 	e := echo.New()
-	// Middleware
 	setupMiddlewares(e)
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, echo.Map{
-			"msg": "ok",
+			"msg": "Hello Hacker!",
 		})
 	})
 	modules.MainController(e)
