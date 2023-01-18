@@ -16,6 +16,7 @@ func loadRedisDB() {
 	}
 	redisClient := redis.NewClient(url)
 	client = redisClient
+	println("REDIS HAS BEEN LOADED!")
 }
 
 func getRedisURL() (*redis.Options, error) {
@@ -24,7 +25,9 @@ func getRedisURL() (*redis.Options, error) {
 	return redis.ParseURL(link)
 }
 
-func GetRedisDB() *redis.Client {
-	once.Do(loadRedisDB)
+func GetRedisClient() *redis.Client {
+	if client == nil {
+		loadRedisDB()
+	}
 	return client
 }

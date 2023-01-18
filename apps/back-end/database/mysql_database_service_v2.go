@@ -41,6 +41,7 @@ func loadDBv2() {
 	gormDB.AutoMigrate(&entity.RefreshToken{})
 	gormDB.AutoMigrate(&entity.LectureRating{})
 	databasev2 = gormDB
+	println("DATABASE HAS BEEN LOADED!")
 }
 
 func GetDBv2() *gorm.DB {

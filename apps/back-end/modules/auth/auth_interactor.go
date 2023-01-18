@@ -4,6 +4,8 @@ import (
 	"FindMyDosen/database"
 	"FindMyDosen/model/dto"
 	"FindMyDosen/model/entity"
+	"FindMyDosen/repository/auth_repo"
+	"FindMyDosen/repository/redis_repo"
 	"math/rand"
 	"time"
 )
@@ -70,7 +72,7 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 
 func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 	db := database.GetDB()
-	hashed, err := HashPassword(user.Password)
+	hashed, err := auth_repo.HashPassword(user.Password)
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
@@ -92,14 +94,16 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
-	refresh, stored, err := generateRefreshKey()
-	storedRefresh := entity.RefreshToken{
-		UserID:     newUser.ID,
-		RefreshKey: stored,
-	}
-	if err = db.Create(&storedRefresh).Error; err != nil {
-		return err, dto.AuthDTO{}
-	}
+	refresh, err := redis_repo.NewRefreshToken(newUser.ID)
+
+	//refresh, stored, err := generateRefreshKey()
+	//storedRefresh := entity.RefreshToken{
+	//	UserID:     newUser.ID,
+	//	RefreshKey: stored,
+	//}
+	//if err = db.Create(&storedRefresh).Error; err != nil {
+	//	return err, dto.AuthDTO{}
+	//}
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
@@ -118,6 +122,6 @@ func generateRefreshKey() (string, string, error) {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	randomKey := string(b)
-	hashed, err := HashPassword(randomKey)
+	hashed, err := auth_repo.HashPassword(randomKey)
 	return randomKey, hashed, err
 }

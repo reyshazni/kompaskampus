@@ -38,12 +38,16 @@ func loadDB() {
 	db.AutoMigrate(&entity.LectureRating{})
 	db.AutoMigrate(&entity.RefreshToken{})
 	database = db
+	println("LOAD TEST DB")
 }
 
 func GetDB() *gorm.DB {
 	//once.Do(loadDB)
+	if database == nil {
+		loadDBv2()
+	}
 	//return database
-	once.Do(loadDBv2)
+	println("MEK!")
 	return databasev2
 }
 

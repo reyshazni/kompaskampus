@@ -3,7 +3,7 @@ package user
 import (
 	"FindMyDosen/database"
 	"FindMyDosen/model/entity"
-	"FindMyDosen/modules/auth"
+	"FindMyDosen/repository/auth_repo"
 	"time"
 )
 
@@ -56,7 +56,7 @@ func updateUserInformation(newUserData *UpdateUserDTO) error {
 
 func changeUserPassword(uid uint, pwdDTO *ChangePasswordDTO) error {
 	db := database.GetDB()
-	hashed, err := auth.HashPassword(pwdDTO.NewPassword)
+	hashed, err := auth_repo.HashPassword(pwdDTO.NewPassword)
 	if err != nil {
 		return err
 	}
