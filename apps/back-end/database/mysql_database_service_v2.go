@@ -44,8 +44,10 @@ func loadDBv2() {
 	println("DATABASE HAS BEEN LOADED!")
 }
 
-func GetDBv2() *gorm.DB {
-	once.Do(loadDBv2)
+func GetDB() *gorm.DB {
+	if databasev2 == nil {
+		loadDBv2()
+	}
 	return databasev2
 }
 

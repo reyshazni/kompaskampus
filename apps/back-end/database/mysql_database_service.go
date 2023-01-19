@@ -41,16 +41,6 @@ func loadDB() {
 	println("LOAD TEST DB")
 }
 
-func GetDB() *gorm.DB {
-	//once.Do(loadDB)
-	if database == nil {
-		loadDBv2()
-	}
-	//return database
-	println("MEK!")
-	return databasev2
-}
-
 func getDatabaseDsn() string {
 	entity := config.GetDatabaseConf()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", entity.User, entity.Password, entity.Url, entity.Port, entity.DbName)

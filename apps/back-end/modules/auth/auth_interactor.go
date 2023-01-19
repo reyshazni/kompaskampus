@@ -85,15 +85,6 @@ func performUserRegistration(user *dto.NewUserDTO) (error, dto.AuthDTO) {
 		return err, dto.AuthDTO{}
 	}
 	refresh, err := redis_repo.NewRefreshToken(newUser.ID)
-
-	//refresh, stored, err := generateRefreshKey()
-	//storedRefresh := entity.RefreshToken{
-	//	UserID:     newUser.ID,
-	//	RefreshKey: stored,
-	//}
-	//if err = db.Create(&storedRefresh).Error; err != nil {
-	//	return err, dto.AuthDTO{}
-	//}
 	if err != nil {
 		return err, dto.AuthDTO{}
 	}
