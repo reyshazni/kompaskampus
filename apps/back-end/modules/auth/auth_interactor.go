@@ -8,14 +8,19 @@ import (
 	"FindMyDosen/repository/redis_repo"
 )
 
+type RefreshError struct{}
+
+func (m *RefreshError) Error() string {
+	return "Error Validating Refresh Key"
+}
+
 func performRefreshToken(uid uint, refreshToken string) (dto.AuthDTO, error) {
 	key, err := redis_repo.GetRefreshToken(uid)
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}
-	err = checkPassword(refreshToken, key)
-	if err != nil {
-		return dto.AuthDTO{}, err
+	if key != refreshToken {
+		return dto.AuthDTO{}, &RefreshError{}
 	}
 
 	token, err := generateToken(uid, true) //refreshRef.User.IsVerified)
@@ -42,7 +47,10 @@ func performUserLogin(userData *dto.LoginUserDTO) (dto.AuthDTO, error) {
 		return dto.AuthDTO{}, err
 	}
 	token, err := generateToken(user.ID, user.IsVerified)
-	refresh, err := redis_repo.NewRefreshToken(user.ID)
+	refresh, err := redis_repo.GetRefreshToken(user.ID)
+	if err != nil {
+		refresh, err = redis_repo.NewRefreshToken(user.ID)
+	}
 	if err != nil {
 		return dto.AuthDTO{}, err
 	}

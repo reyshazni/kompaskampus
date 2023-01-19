@@ -211,6 +211,10 @@ func generateToken(uid uint, isVerified bool) (string, error) {
 	return token.SignedString([]byte(config.GetJWTSecret()))
 }
 
+func handleLogout(c echo.Context) {
+
+}
+
 func handleVerifyUser(c echo.Context) error {
 	_ = c.Param("code")
 	return c.String(http.StatusOK, "s")
